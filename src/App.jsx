@@ -5,6 +5,7 @@ import { StoreProvider } from "./components/store/storeContext";
 import Categories from "./components/pages/backend/categories/Categories";
 import Clothes from "./components/pages/backend/clothes/Clothes";
 import Dashboard from "./components/pages/backend/dashboard/Dashboard";
+import ProductInfo from "./components/pages/frontend/product-info/ProductInfo";
 
 const App = () => {
   return (
@@ -12,6 +13,7 @@ const App = () => {
       <Router>
         <Routes>
           <Route index element={<Home />} />
+          <Route path="/product/:slug" element={<ProductInfo />} />
           <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/advertisement" element={<Advertisement />} />
           <Route path="/admin/categories" element={<Categories />} />
