@@ -4,13 +4,44 @@ import ModalWrapper from "./ModalWrapper";
 import SpinnerButton from "../spinners/SpinnerButton";
 import { StoreContext } from "@/components/store/storeContext";
 import { setIsDelete } from "@/components/store/storeAction";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryData } from "@/components/helpers/queryData";
+import { data } from "autoprefixer";
 
-const ModalDelete = () => {
+const ModalDelete = ({ setIsDelete, mysqlApiDelete, queryKey, item }) => {
   const { dispatch } = React.useContext(StoreContext);
 
   const handleClose = () => {
     dispatch(setIsDelete(false));
   };
+
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (values) => queryData(mysqlApiDelete, "delete", values),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: [queryKey] });
+      dispatch(setIsDelete(false));
+
+      if (!data.success) {
+        // dispatch(setError(true));
+        // dispatch(setMessage(data.error));
+        console.log("May error!");
+      } else {
+        setIsDelete(false);
+        console.log("Naysuu!");
+        // dispatch(setSuccess(true));
+        // dispatch(setMessage(successMsg));
+      }
+    },
+  });
+
+  const handleYes = async () => {
+    mutation.mutate({
+      item: item,
+    });
+  };
+
   return (
     <>
       <ModalWrapper>
@@ -28,7 +59,7 @@ const ModalDelete = () => {
             </p>
 
             <div className="flex justify-end gap-3 mt-5">
-              <button className="btn btn-alert">
+              <button className="btn btn-alert" onClick={handleYes}>
                 <SpinnerButton /> Delete
               </button>
               <button className="btn btn-cancel" onClick={handleClose}>

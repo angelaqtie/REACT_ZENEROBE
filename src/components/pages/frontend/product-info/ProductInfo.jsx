@@ -15,6 +15,7 @@ const ProductInfo = () => {
   return (
     <>
       <Header />
+      <section className="h-[50vh] bg-black bg-[url(http://localhost/viter-zenorobe/public/img/slider-1.jpg)]"></section>
       <section className="product-info text-black">
         <div className="container">
           <div className="grid grid-cols-[1fr,400px] gap-5 mt-10">
@@ -48,7 +49,7 @@ const ProductInfo = () => {
                       )
                     )}
                   </ul>
-                  <p className="mb-0">reviews</p>
+                  <p className="mb-0">reviews(100)</p>
                 </div>
               </div>
 

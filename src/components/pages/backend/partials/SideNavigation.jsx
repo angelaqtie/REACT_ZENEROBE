@@ -20,8 +20,8 @@ const SideNavigation = ({ menu }) => {
       icon: <LayoutDashboard size={16} />,
     },
     {
-      title: "Advertisement",
-      slug: "/admin/advertisement",
+      title: "Banner",
+      slug: "/admin/banner",
       icon: <MegaphoneIcon size={16} />,
     },
     {
@@ -31,7 +31,7 @@ const SideNavigation = ({ menu }) => {
     },
     {
       title: "Category",
-      slug: "/admin/categories",
+      slug: "/admin/category",
       icon: <Component size={16} />,
     },
   ];

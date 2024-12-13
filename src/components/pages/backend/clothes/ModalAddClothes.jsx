@@ -13,25 +13,70 @@ import SpinnerButton from "../partials/spinners/SpinnerButton";
 import ModalWrapper from "../partials/modals/ModalWrapper";
 import * as Yup from "Yup";
 import { imgPath } from "@/components/helpers/functions-general";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryData } from "@/components/helpers/queryData";
+import useQueryData from "@/components/custom-hook/useQueryData";
 
 const ModalAddClothes = ({ itemEdit }) => {
   const { dispatch } = React.useContext(StoreContext);
   const { uploadPhoto, handleChangePhoto, photo } = useUploadPhoto("");
+  const [value, setValue] = React.useState("");
 
+  const handleChange = (event) => {
+    setValue(event.target.value);
+  };
   const handleClose = () => {
     dispatch(setIsAdd(false));
   };
 
+  const {
+    isFetching,
+    error,
+    data: categ,
+    status,
+  } = useQueryData(
+    `/v2/category`, //endpoint
+    "get", //method
+    "category" //key
+  );
+
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (values) =>
+      queryData(
+        itemEdit ? `/v2/clothes/${itemEdit.clothes_aid}` : "/v2/clothes",
+        itemEdit ? "PUT" : "POST",
+        values
+      ),
+    onSuccess: (data) => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ["clothes"] });
+
+      // show error box
+      if (!data.success) {
+        dispatch(setError(true));
+        dispatch(setMessage(data.error));
+        dispatch(setSuccess(false));
+      } else {
+        console.log("Success");
+        dispatch(setIsAdd(false));
+        dispatch(setSuccess(true));
+        dispatch(setMessage("Record Successful!"));
+      }
+    },
+  });
+
   const initVal = {
+    clothes_image: itemEdit ? itemEdit.clothes_image : "",
     clothes_title: itemEdit ? itemEdit.clothes_title : "",
-    clothes_category: itemEdit ? itemEdit.clothes_category : "",
     clothes_price: itemEdit ? itemEdit.clothes_price : "",
+    clothes_category_id: itemEdit ? itemEdit.clothes_category_id : "",
   };
 
   const yupSchema = Yup.object({
     clothes_title: Yup.string().required("Required"),
-    clothes_category: Yup.string().required("Required"),
     clothes_price: Yup.string().required("Required"),
+    clothes_category_id: Yup.string().required("Required"),
   });
 
   return (
@@ -49,7 +94,17 @@ const ModalAddClothes = ({ itemEdit }) => {
             initialValues={initVal}
             validationSchema={yupSchema}
             onSubmit={async (values) => {
-              console.log(values);
+              mutation.mutate({
+                ...values,
+                clothes_image:
+                  (itemEdit?.clothes_image === "" && photo) ||
+                  (!photo && "") ||
+                  (photo === undefined && "") ||
+                  (photo && itemEdit?.clothes_image !== photo?.name)
+                    ? photo?.name || ""
+                    : itemEdit?.clothes_image || "",
+              });
+              uploadPhoto();
             }}
           >
             {(props) => {
@@ -59,7 +114,7 @@ const ModalAddClothes = ({ itemEdit }) => {
                     <div className="form-wrapper p-4 max-h-[80vh] h-full overflow-y-auto custom-scroll">
                       <div className="input-wrap relative  group input-photo-wrap h-[150px] mb-8">
                         <label htmlFor="">Photo</label>
-                        {itemEdit === null ? (
+                        {itemEdit === null && photo === null ? (
                           <div className="w-full border border-line rounded-md flex justify-center items-center flex-col h-full">
                             <ImagePlusIcon
                               size={50}
@@ -73,11 +128,11 @@ const ModalAddClothes = ({ itemEdit }) => {
                         ) : (
                           <img
                             src={
-                              itemEdit === null
+                              photo
                                 ? URL.createObjectURL(photo) // preview
                                 : imgPath + "/" + itemEdit?.clothes_image // check db
                             }
-                            alt="employee photo"
+                            alt="clothes photo"
                             className={`group-hover:opacity-30 duration-200 relative object-cover h-full w-full  m-auto `}
                           />
                         )}
@@ -98,6 +153,7 @@ const ModalAddClothes = ({ itemEdit }) => {
                           label="Title"
                           type="text"
                           name="clothes_title"
+                          onChange={handleChange}
                         />
                       </div>
 
@@ -106,17 +162,28 @@ const ModalAddClothes = ({ itemEdit }) => {
                           label="Price"
                           type="text"
                           name="clothes_price"
+                          onChange={handleChange}
                         />
                       </div>
                       <div className="input-wrap">
-                        <label htmlFor="">Category</label>
-                        <InputSelect label="" name="clothes_category">
-                          <option value="" hidden>
-                            Select Category
-                          </option>
-                          <option value="Tees & Tanks">Tees & Tanks </option>
-                          <option value="Pants">Pants</option>
-                          <option value="Sweaters">Sweaters</option>
+                        <InputSelect
+                          label="Category"
+                          name="clothes_category_id"
+                          onChange={handleChange}
+                        >
+                          <option value="" hidden></option>
+                          {categ?.data.map((item, key) => {
+                            return (
+                              <>
+                                {item.category_is_active === 1 && (
+                                  <option key={key} value={item.category_aid}>
+                                    {item.category_title}
+                                  </option>
+                              )}
+                              </>
+                            )
+                          })}
+                          
                         </InputSelect>
                       </div>
                     </div>

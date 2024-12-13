@@ -1,15 +1,15 @@
-import { StoreContext } from '@/components/store/storeContext';
-import React from 'react'
-import SideNavigation from '../partials/SideNavigation';
-import Header from '../partials/Header';
-import Searchbar from '../partials/Searchbar';
-import Footer from '../partials/Footer';
-import ModalValidation from '../partials/modals/ModalValidation';
-import ModalError from '../partials/modals/ModalError';
-import { Plus } from 'lucide-react';
-import ClothesTable from './ClothesTable';
-import { setIsAdd } from '@/components/store/storeAction';
-import ModalAddClothes from './ModalAddClothes';
+import { StoreContext } from "@/components/store/storeContext";
+import React from "react";
+import SideNavigation from "../partials/SideNavigation";
+import Header from "../partials/Header";
+import Searchbar from "../partials/Searchbar";
+import Footer from "../partials/Footer";
+import ModalValidation from "../partials/modals/ModalValidation";
+import ModalError from "../partials/modals/ModalError";
+import { Plus } from "lucide-react";
+import ClothesTable from "./ClothesTable";
+import { setIsAdd } from "@/components/store/storeAction";
+import ModalAddClothes from "./ModalAddClothes";
 
 const Clothes = () => {
   const { dispatch, store } = React.useContext(StoreContext);
@@ -48,6 +48,6 @@ const Clothes = () => {
       {store.isAdd && <ModalAddClothes itemEdit={itemEdit} />}
     </>
   );
-}
+};
 
-export default Clothes
+export default Clothes;
