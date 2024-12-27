@@ -3,15 +3,15 @@
 require '../../core/header.php';
 // use needed functions
 require '../../core/functions.php';
-// require 'functions.php';
+require 'functions.php';
 // use needed classes
-require '../../models/category/Category.php';
+require '../../models/clothes/Clothes.php';
 
 // check database connection
 $conn = null;
 $conn = checkDbConnection();
 // make instance of classes
-$category = new Category($conn);
+$clothes = new Clothes($conn);
 $response = new Response();
 // validate api key
 if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
@@ -20,19 +20,19 @@ if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
     if (array_key_exists("start", $_GET)) {
         // get data
         // get task id from query string
-        $category->category_start = $_GET['start'];
-        $category->category_total = 11;
+        $clothes->clothes_start = $_GET['start'];
+        $clothes->clothes_total = 1;
         //check to see if task id in query string is not empty and is number, if not return json error
-        checkLimitId($category->category_start, $category->category_total);
+        checkLimitId($clothes->clothes_start, $clothes->clothes_total);
 
-        $query = checkReadLimit($category);
-        $total_result = checkReadAll($category);
+        $query = checkReadLimit($clothes);
+        $total_result = checkReadAll($clothes);
         http_response_code(200);
         checkReadQuery(
             $query,
             $total_result,
-            $category->category_total,
-            $category->category_start
+            $clothes->clothes_total,
+            $clothes->clothes_start
         );
     }
     // return 404 error if endpoint not available

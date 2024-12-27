@@ -4,14 +4,17 @@ import { ImagePlusIcon, X } from "lucide-react";
 import Spinner from "../partials/spinners/Spinner";
 import SpinnerButton from "../partials/spinners/SpinnerButton";
 import { StoreContext } from "@/components/store/storeContext";
-import { setIsAdd } from "@/components/store/storeAction";
+import { setError, setIsAdd, setMessage, setSuccess } from "@/components/store/storeAction";
 import { Form, Formik } from "formik";
 
 import * as Yup from "Yup";
 import useUploadPhoto from "@/components/custom-hook/useUploadPhoto";
 import { InputPhotoUpload, InputText } from "@/components/helpers/FormInputs,";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryData } from "@/components/helpers/queryData";
+import { imgPath } from "@/components/helpers/functions-general";
 
-const ModalAddBanner = () => {
+const ModalAddBanner = ({ isAdsEdit }) => {
   const { dispatch } = React.useContext(StoreContext);
   const { uploadPhoto, handleChangePhoto, photo } = useUploadPhoto("");
 
@@ -19,12 +22,46 @@ const ModalAddBanner = () => {
     dispatch(setIsAdd(false));
   };
 
+  const handleChange = (event) => {
+    setNestedObjectValues(event.target.value);
+  };
+
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (values) =>
+      queryData(
+        isAdsEdit
+          ? `/v2/banner/${isAdsEdit.banner_aid}`
+          : "/v2/banner",
+        isAdsEdit ? "PUT" : "POST",
+        values
+      ),
+    onSuccess: (data) => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ["banner"] });
+
+      // show error box
+      if (!data.success) {
+        dispatch(setError(true));
+        dispatch(setMessage(data.error));
+        dispatch(setSuccess(false));
+      } else {
+        console.log("Success");
+        dispatch(setIsAdd(false));
+        dispatch(setSuccess(true));
+        dispatch(setMessage("Record Successful!"));
+      }
+    },
+  });
+
   const initVal = {
-    advertisement_title: "",
+    banner_title: isAdsEdit ? isAdsEdit.banner_title : "",
+    banner_excerpt: isAdsEdit ? isAdsEdit.banner_excerpt : "",
   };
 
   const yupSchema = Yup.object({
-    advertisement_title: Yup.string().required("Required"),
+    banner_title: Yup.string().required("Required"),
+    banner_excerpt: Yup.string().required("Required"),
   });
 
   return (
@@ -32,7 +69,7 @@ const ModalAddBanner = () => {
       <ModalWrapper>
         <div className="modal-side absolute top-0 right-0 bg-primary h-[100dvh] w-[300px] border border-line">
           <div className="modal-header p-4 flex justify-between items-center">
-            <h5 className="mb-0">Add Advertisement</h5>
+            <h5 className="mb-0">Add Banner</h5>
             <button onClick={handleClose}>
               <X />
             </button>
@@ -42,7 +79,17 @@ const ModalAddBanner = () => {
             initialValues={initVal}
             validationSchema={yupSchema}
             onSubmit={async (values) => {
-              console.log(values);
+              mutation.mutate({
+                ...values,
+                banner_image:
+                  (isAdsEdit?.banner_image === "" && photo) ||
+                  (!photo && "") ||
+                  (photo === undefined && "") ||
+                  (photo && isAdsEdit?.banner_image !== photo?.name)
+                    ? photo?.name || ""
+                    : isAdsEdit?.banner_image || "",
+              });
+              uploadPhoto();
             }}
           >
             {(props) => {
@@ -54,12 +101,19 @@ const ModalAddBanner = () => {
                         <InputText
                           label="Title"
                           type="text"
-                          name="advertisement_title"
+                          name="banner_title"
+                        />
+                      </div>
+                      <div className="input-wrap">
+                        <InputText
+                          label="Excerpt"
+                          type="text"
+                          name="banner_excerpt"
                         />
                       </div>
                       <div className="input-wrap relative  group input-photo-wrap h-[150px] ">
                         <label htmlFor="">Photo</label>
-                        {photo === null ? (
+                        {isAdsEdit === null && photo === null ? (
                           <div className="w-full border border-line rounded-md flex justify-center items-center flex-col h-full">
                             <ImagePlusIcon
                               size={50}
@@ -73,9 +127,9 @@ const ModalAddBanner = () => {
                         ) : (
                           <img
                             src={
-                              true
+                              photo
                                 ? URL.createObjectURL(photo) // preview
-                                : imgPath + "/" + itemEdit?.movies_image // check db
+                                : imgPath + "/" + isAdsEdit?.banner_image // check db
                             }
                             alt="employee photo"
                             className={`group-hover:opacity-30 duration-200 relative object-cover h-full w-full  m-auto `}
@@ -96,8 +150,7 @@ const ModalAddBanner = () => {
                     </div>
                     <div className="form-action flex p-4 justify-end gap-3">
                       <button className="btn btn-accent" type="submit">
-                        <SpinnerButton />
-                        Save
+                        {mutation.isPending ? <SpinnerButton /> : "Save"}
                       </button>
                       <button
                         className="btn btn-cancel"

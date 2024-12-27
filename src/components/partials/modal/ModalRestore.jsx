@@ -6,11 +6,16 @@ import { GrFormClose } from "react-icons/gr";
 import ButtonSpinner from "../spinner/ButtonSpinner";
 import { StoreContext } from "@/components/store/storeContext";
 import ModalWrapper from "@/components/pages/backend/partials/modals/ModalWrapper";
-import { setIsRestore } from "@/components/store/storeAction";
+import {
+  setError,
+  setIsRestore,
+  setMessage,
+  setSuccess,
+} from "@/components/store/storeAction";
 import { MdRestore } from "react-icons/md";
 import { ArchiveRestore } from "lucide-react";
 
-const ModalRestore = ({ setIsArchive, mysqlEndpoint, queryKey, item }) => {
+const ModalRestore = ({ setIsRestore, mysqlEndpoint, queryKey, item }) => {
   const { store, dispatch } = React.useContext(StoreContext);
   const handleClose = () => {
     dispatch(setIsRestore(false));
@@ -26,10 +31,13 @@ const ModalRestore = ({ setIsArchive, mysqlEndpoint, queryKey, item }) => {
       // dispatch(setIsDelete(false));
 
       if (!data.success) {
-        console.log("May error!");
+        dispatch(setError(true));
+        dispatch(setMessage(data.error));
+        dispatch(setIsRestore(false));
       } else {
         dispatch(setIsRestore(false));
-        console.log("Naysuu!");
+        dispatch(setSuccess(true));
+        dispatch(setMessage("Successful"));
       }
     },
   });
@@ -53,7 +61,7 @@ const ModalRestore = ({ setIsArchive, mysqlEndpoint, queryKey, item }) => {
           </div>
           <div className="modal-body p-2 py-4">
             <p className="mb-0 text-center">
-              Are you sure you want to this restore category? {item}
+              Are you sure you want to this restore ? {item}
             </p>
 
             <div className="flex justify-end gap-3 mt-5">

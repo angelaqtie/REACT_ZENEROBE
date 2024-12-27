@@ -7,6 +7,11 @@ import ButtonSpinner from "../spinner/ButtonSpinner";
 import { StoreContext } from "@/components/store/storeContext";
 import ModalWrapper from "@/components/pages/backend/partials/modals/ModalWrapper";
 import { Archive } from "lucide-react";
+import {
+  setError,
+  setMessage,
+  setSuccess,
+} from "@/components/store/storeAction";
 
 const ModalArchive = ({ setIsArchive, mysqlEndpoint, queryKey, item }) => {
   const { store, dispatch } = React.useContext(StoreContext);
@@ -24,10 +29,13 @@ const ModalArchive = ({ setIsArchive, mysqlEndpoint, queryKey, item }) => {
       // dispatch(setIsDelete(false));
 
       if (!data.success) {
-        console.log("May error!");
+        dispatch(setError(true));
+        dispatch(setMessage(data.error));
+        dispatch(setSuccess(false));
       } else {
         dispatch(setIsArchive(false));
-        console.log("Naysuu!");
+        dispatch(setSuccess(true));
+        dispatch(setMessage("Successful!"));
       }
     },
   });
@@ -51,7 +59,7 @@ const ModalArchive = ({ setIsArchive, mysqlEndpoint, queryKey, item }) => {
           </div>
           <div className="modal-body p-2 py-4">
             <p className="mb-0 text-center">
-              Are you sure you want to this archive category? {item}
+              Are you sure you want to this archive? {item}
             </p>
 
             <div className="flex justify-end gap-3 mt-5">

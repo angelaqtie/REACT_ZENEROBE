@@ -14,8 +14,11 @@ import ModalAddBanner from "./ModalAddBanner";
 
 const Banner = () => {
   const { dispatch, store } = React.useContext(StoreContext);
+  const [isAdsEdit, setIsAdsEdit] = React.useState(null);
+  
   const handleAdd = () => {
     dispatch(setIsAdd(true));
+    setIsAdsEdit(null);
   };
   return (
     <>
@@ -26,13 +29,13 @@ const Banner = () => {
             <Header title="Banner" subtitle="Manage Kiosk Banner" />
             <div className="p-8">
               <div className="flex justify-between items-center">
-                <Searchbar />
+                <div></div>
                 <button className="btn btn-add" onClick={handleAdd}>
                   <Plus size={16} /> Add New
                 </button>
               </div>
 
-              <BannerTable />
+              <BannerTable  setIsAdsEdit={setIsAdsEdit}/>
             </div>
 
             <Footer />
@@ -40,9 +43,11 @@ const Banner = () => {
         </div>
       </section>
       {store.validate && <ModalValidation />}
-      {store.error && <ModalError />}
+      {/* {store.error && <ModalError />} */}
       {store.success && <ToastSuccess />}
-      {store.isAdd && <ModalAddBanner />}
+      {store.isAdd && (
+        <ModalAddBanner  setIsAdsEdit={setIsAdsEdit} isAdsEdit={isAdsEdit}/>
+      ) }
     </>
   );
 };
